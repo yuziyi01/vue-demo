@@ -1,0 +1,371 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>天气因素分析</title>
+
+    <!--#parse("include/header.html")-->
+    <meta
+            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+            name="viewport">
+    <link rel="stylesheet" href="statics/css/bootstrap.min.css">
+    <link rel="stylesheet" href="statics/css/font-awesome.min.css">
+    <link rel="stylesheet" href="statics/plugins/bootstrap-table/bootstrap-table.min.css">
+    <link rel="stylesheet" href="statics/plugins/treegrid/jquery.treegrid.css">
+    <link rel="stylesheet" href="statics/plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="statics/css/style.min.css">
+    <link rel="stylesheet" href="statics/css/common.min.css">
+    <link rel="stylesheet" href="statics/css/fileinput.css">
+
+    <link rel="stylesheet" href="statics/css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="statics/css/bootstrap-select.min.css">
+    <link  rel="stylesheet" type="text/css" href="statics/plugins/style.css" />
+    <script src="statics/js/base/echarts/echarts.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="statics/css3-aircraft-progressbar/css/style.css">
+
+</head>
+<body>
+<div class="panel panel-primary" style="margin: 10px">
+    <div class="panel-heading">模块说明</div>
+    <div class="panel-body">
+        <ul style="margin-top: 10px">
+            <li>本模块说明</li>
+            <p style="margin-top: 10px">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;流程请参照下方步骤条。<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;刷新页面可结束当前流程从新开始。<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;大部分功能已无效，按钮不标无效的有替代图表等功能，替代的功能因无后台交互已写死<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;数据上传页面请直接点击跳过按钮。<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;模型生成按钮点击后会闪一下原先是进度条，不重要不改了。。<br/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;未完待续。。。
+            </p>
+        </ul>
+    </div>
+</div>
+<div class="panel panel-primary" style="margin: 10px" id="all">
+    <div class="panel-heading">预测流程</div>
+    <div class="panel-body">
+        <div class="container kv-main">
+            <div style="margin-top: 20px">
+                <ul class="nav  nav-justified step step-arrow unhover">
+                    <li id="dataload" class="active">
+                        <a>上传模板下载</a>
+                    </li>
+                    <li id="dataup">
+                        <a>数据上传</a>
+                    </li>
+                    <li id="datareport">
+                        <a>上传数据报告</a>
+                    </li>
+                    <br>
+                    <li id="datapre">
+                        <a>数据预处理</a>
+                    </li>
+                    <li id="model">
+                        <a>模型生成</a>
+                    </li>
+                    <li id="task">
+                        <a>预测任务</a>
+                    </li>
+                    <li id="result">
+                        <a>预测结果</a>
+                    </li>
+                </ul>
+                <hr>
+                <div id="dataload1">
+                    <a id="downloadwd" class="btn btn-primary" style="margin-left: 10px" href="../statics/download/天气数据表.xlsx" download="">天气状况表模板下载</a>
+                    <a id="downloadws" class="btn btn-primary" style="margin-left: 10px" href="../statics/download/销售数据表单-天气.xlsx" download="">销售表模板下载</a>
+                    <hr>
+                    <a @click="dataload11" class="btn btn-primary "  style="margin-left: 10px">下一步</a>
+                </div>
+
+                <div id="dataup1" class="hidden">
+                    <form enctype="multipart/form-data" class="form-horizontal" role="form" style="margin-top: 50px">
+                        <label  class="" style="font-size: 15px; " > 上传数据表类型: </label>
+                        <select  class="selectpicker" v-model="datatype"  >
+                            <option v-for="table in tables" v-bind:value="table.value">
+                                {{ table.text }}
+                            </option>
+                        </select>
+                        <hr>
+                        <!--<button type="button" class="btn btn-primary" style="margin-left: 10px" @click="dataup11">上传</button>-->
+                        <button type="button" class="btn btn-primary" style="margin-left: 10px" @click="dataup12">跳过</button>
+                        <br><br>
+                        <div class="form-group" style="display: none" id="fileDiv">
+                            <input id="file-zh" name="file-zh" type="file" multiple>
+                        </div>
+                    </form>
+                </div>
+                <div id="datareport1" class="hidden">
+                    <label  >异常值反馈：</label>
+                    <hr>
+                    <div id="right" class="hidden">
+                        <label  >无异常值</label>
+                        <hr>
+                        <a @click="datareport12" class="btn btn-primary "  style="margin-left: 10px">上一步</a>
+
+                        <a @click="datareport11" class="btn btn-primary "  style="margin-left: 10px">下一步</a>
+
+                    </div>
+                    <div id="error" class="hidden">
+                        <label  >有异常</label>
+                        <hr>
+                        <label id="sale1">请重新上传</label>
+                        <hr>
+                        <div class=" form-inline ">
+                            <div class="form-group">
+                                <input  type="text" class="form-control" placeholder="请输入查询关键字" style="width: 220px;" />
+                            </div>
+                            <div class="form-group">
+                                <a class="btn btn-primary" ><i class="fa fa-search"></i>&nbsp;查询</a>
+                            </div>
+                            <div class="btn-toolbar pull-right">
+                                <div class="btn-group">
+                                    <a class="btn btn-default" ><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                                    <!--<a  class="btn btn-default" @click="edit"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>-->
+                                    <a  class="btn btn-default"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <table id="sale" ></table>
+                        <br>
+                        <a @click="dataup11" class="btn btn-primary "  style="margin-left: 5px">重新上传</a>
+                        <br><br>
+                    </div>
+
+
+                </div>
+                <div id="datapre1" class="hidden">
+                    <a @click="datapre10" class="btn btn-primary "  style="margin-left: 10px">数据预处理（无效）</a>
+                    <hr>
+                    <a @click="datapre11" class="btn btn-primary "  style="margin-left: 10px">下一步</a>
+
+
+                </div>
+                <div id="model1" class="hidden">
+                    <label  class="col-sm-2" style="font-size: 15px; margin-left: 10px" > 选择国家: </label>
+                    <select class="selectpicker" v-model="countryselect" >
+                        <option v-for="country in countrys" v-bind:value="country.value">
+                            {{ country.text }}
+                        </option>
+                    </select>
+                    <hr>
+                    <label  class="col-sm-2" style="font-size: 15px;margin-left: 10px"> 选择区域: </label>
+                    <select class="selectpicker" v-model="regionselect" >
+                        <option v-for="region in regions" v-bind:value="region.value">
+                            {{ region.text }}
+                        </option>
+                    </select>
+                    <hr>
+                    <label  class="col-sm-2" style="font-size: 15px; margin-left: 10px" > 选择商品: </label>
+                    <select class="selectpicker" v-model="trade" >
+                        <!--<option value="">请选择...</option>-->
+                        <option v-for="option in options">
+                            {{ option }}
+                        </option>
+                    </select>
+                    <hr>
+                    <label  class="col-sm-2" style="font-size: 15px; margin-left: 10px" > 选择时间: </label>
+                    <select class="selectpicker" v-model="modeltime" >
+                        <option v-for="time in times" v-bind:value="time.value">
+                            {{ time.text }}
+                        </option>
+                    </select>
+                    <hr>
+                    <button type="button" class="btn btn-primary" style="margin-left: 20px" @click="xishu">皮尔逊相关系数</button>
+                    <hr>
+                    <div id="chartxi" style="width: 800px;height:400px;" class="hidden"></div>
+                    <hr>
+                    <label  class="col-sm-2" style="font-size: 15px;margin-left: 10px"> 选择回归算法: </label>
+                    <select class="selectpicker" v-model="suanfatype" >
+                        <option v-for="regression in regressions" v-bind:value="regression.value">
+                            {{ regression.text }}
+                        </option>
+                    </select>
+                    <hr>
+                    <button type="button" class="btn btn-primary" style="margin-left: 20px" @click="modelcreate">模型生成</button>
+                    <hr>
+                    <div id="chart" style="width: 800px;height:400px;" class="hidden"></div>
+                    <hr>
+                    <a @click="model11" class="btn btn-primary "  style="margin-left: 20px">下一步</a>
+
+                </div>
+
+
+                <div id="task1" class="hidden">
+                    <label  class="col-sm-2" style="font-size: 15px; margin-left: 10px" > 选择国家: </label>
+                    <select class="selectpicker" v-model="countryselect" >
+                        <option v-for="country in countrys" v-bind:value="country.value">
+                            {{ country.text }}
+                        </option>
+                    </select>
+                    <hr>
+                    <label  class="col-sm-2" style="font-size: 15px;margin-left: 10px"> 选择区域: </label>
+                    <select class="selectpicker" v-model="regionselect" >
+                        <option v-for="region in regions" v-bind:value="region.value">
+                            {{ region.text }}
+                        </option>
+                    </select>
+                    <hr>
+                    <label  class="col-sm-2" style="font-size: 15px;margin-left: 10px" > 选择商品: </label>
+                    <select class="selectpicker" v-model="trade" >
+                        <!--<option value="">请选择...</option>-->
+                        <option v-for="option in options">
+                            {{ option }}
+                        </option>
+                    </select>
+                    <hr>
+                    <label  class="col-sm-2" style="font-size: 15px;margin-left: 10px"> 选择回归算法: </label>
+                    <select class="selectpicker" v-model="suanfatype" >
+                        <option v-for="regression in regressions" v-bind:value="regression.value">
+                            {{ regression.text }}
+                        </option>
+                    </select>
+                    <hr>
+                    <div class="form-group">
+                        <label for="dtp_input5" class="col-md-2 control-label" style="font-size: 15px;margin-left: 10px">开始时间：</label>
+                        <div class="input-group date start_date col-md-5" data-date=""  data-link-field="dtp_input5" data-link-format="yyyy-mm-dd">
+                            <input class="form-control" size="16" type="text" value="" readonly>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                        </div>
+                        <input type="hidden" id="dtp_input5" value="" /><br/>
+                    </div>
+                    <div class="form-group">
+                        <label for="dtp_input6" class="col-md-2 control-label" style="font-size: 15px;margin-left: 10px">结束时间：</label>
+                        <div class="input-group date end_date col-md-5" data-date=""  data-link-field="dtp_input6" data-link-format="yyyy-mm-dd">
+                            <input class="form-control" size="16" type="text" value="" readonly>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+                            <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                        </div>
+                        <input type="hidden" id="dtp_input6" value="" /><br/>
+                    </div>
+                    <hr>
+                    <a @click="task10" class="btn btn-primary "  style="margin-left: 20px">上一步</a>
+                    <a @click="task11" class="btn btn-primary "  style="margin-left: 20px">下一步</a>
+
+                </div>
+                <div id="result1" class="hidden">
+                    <div id="chart1" style="width: 800px;height:400px;"></div>
+
+                    <hr>
+                    <label >正确率比对（仅比对已有数据部分）</label>
+                    <br>
+                    <table id="rate"></table>
+                    <br>
+                    <a @click="result11" class="btn btn-primary "  style="margin-left: 10px">新的流程</a>
+                    <hr>
+                </div>
+
+            </div>
+
+
+
+
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="my" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="myM" aria-hidden="true" style="width:800px">
+    <div class="modal-dialog">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myM">分析中...请耐心等待</h4>
+            </div>
+            <div class="progress progress-striped active">
+                <div class="progress-bar progress-bar-success" role="progressbar"
+                     style="width: 100%;animation: animate-positive 10s;">
+                    <span>进行中</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    信息提示
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label  class="col-sm-3 control-label" id="message"></label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">关闭
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+
+<script src="statics/libs/jquery.min.js"></script>
+<script src="statics/libs/bootstrap.min.js"></script>
+<script src="statics/plugins/layer/layer.js"></script>
+<script src="statics/libs/vue.min.js"></script>
+<script src="statics/plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="statics/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="statics/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="statics/plugins/treegrid/jquery.treegrid.min.js"></script>
+<script src="statics/plugins/treegrid/jquery.treegrid.bootstrap3.js"></script>
+<script src="statics/plugins/treegrid/jquery.treegrid.extension.js"></script>
+<script src="statics/plugins/treegrid/tree.table.js"></script>
+<script src="statics/plugins/validator/validator.js"></script>
+<script src="statics/js/common.js"></script>
+<script src="statics/js/form.js"></script>
+<script src="statics/js/dataUpload/fileinput.min.js"></script>
+<script src="statics/js/dataUpload/zh.js"></script>
+<!--#parse("include/footer.html")-->
+<script src="statics/js/base/weather/all.js?_${date.systemTime}"></script>
+<script src="statics/js/bootstrap-datetimepicker.js"></script>
+<script src="statics/js/bootstrap-datetimepicker.zh-CN.js"></script>
+<script type="text/javascript">
+
+    $('.start_date').datetimepicker({
+        language: 'zh-CN',
+        weekStart: 1,
+        todayBtn:  1,
+        autoclose: 1,
+        format: 'yyyy-mm',//显示格式
+        todayHighlight: 1,
+        startView: 3,
+        minView: 3,
+        forceParse: 0,
+        initialDate:"2017-01"
+    });
+    $('.end_date').datetimepicker({
+        language: 'zh-CN',
+        weekStart: 1,
+        todayBtn:  1,
+        autoclose: 1,
+        format: 'yyyy-mm',//显示格式
+        todayHighlight: 1,
+        startView: 3,
+        minView: 3,
+        forceParse: 0,
+        initialDate:"2017-07"
+    });
+</script>
+
+
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="statics/js/bootstrap-select.min.js"></script>
+
+<!-- (Optional) Latest compiled and minified JavaScript translation files -->
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/i18n/defaults-*.min.js"></script>-->
+
+</body>
+</html>
